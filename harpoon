@@ -113,12 +113,14 @@ _switch() {
 	dirpath="${path%%:*}"
 	pane="${path#*:}"
 	[ "$dirpath" = "$pane" ] && pane=""
+	tmux_base_index=$(tmux show-option -gqv base-index 2>/dev/null || echo 0)
+	tmux_pane_base_index=$(tmux show-option -gqv pane-base-index 2>/dev/null || echo 0)
 	if ! sessions_has_match "$name=$dirpath"; then
 		if [ "$(uname)" = "Darwin" ]; then sedi="sed -i ''"; else sedi="sed -i"; fi
-		$sedi "s|^$name=.*|$name=$dirpath:1.1|" "$cachefile"
+		$sedi "s|^$name=.*|$name=$dirpath:$tmux_base_index.$tmux_pane_base_index|" "$cachefile"
 		tmux new -ds "$name" -c "$dirpath"
 	fi
-	exec tmux switch-client -t "$name:$pane"
+	exec tmux switch-client -t "$name:${pane:-$tmux_base_index.$tmux_pane_base_index}"
 }
 
 switch() {
