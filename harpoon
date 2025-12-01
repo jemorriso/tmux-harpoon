@@ -81,7 +81,7 @@ _dedupe() {
 	tmpfile="$(mktemp)"
 	command cat -n "$cachefile" | sort -uk2 | sort -n | cut -f2- >"$tmpfile"
 	mv "$tmpfile" "$cachefile"
-	rm "$tmpfile"
+	# rm "$tmpfile"
 }
 
 replace() {
@@ -120,7 +120,11 @@ _switch() {
 		$sedi "s|^$name=.*|$name=$dirpath:$tmux_base_index.$tmux_pane_base_index|" "$cachefile"
 		tmux new -ds "$name" -c "$dirpath"
 	fi
-	exec tmux switch-client -t "$name:${pane:-$tmux_base_index.$tmux_pane_base_index}"
+	if [ -n "$pane" ]; then
+		exec tmux switch-client -t "$name:$pane"
+	else
+		exec tmux switch-client -t "$name"
+	fi
 }
 
 switch() {
